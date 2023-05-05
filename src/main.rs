@@ -1,7 +1,7 @@
 use std::{
     collections::HashMap,
     env::current_dir,
-    fs::File,
+    fs::{self, File},
     io::Read,
     time::Instant,
     result::Result,
@@ -10,8 +10,13 @@ use std::{
 use ff::PrimeField;
 use nova_scotia::{
     circom::reader::load_r1cs, create_public_params, create_recursive_circuit, FileLocation, F1, G2,
+    circom::circuit::{R1CS, CircomCircuit},
+    G1, F2,
 };
-use nova_snark::traits::Group;
+use nova_snark::{
+    traits::{circuit::TrivialTestCircuit, Group},
+    PublicParams,
+};
 use serde_json::Value;
 
 /*
@@ -40,6 +45,37 @@ struct MACI_Inputs {
     inputHash: String
 } */
 
+type PP = PublicParams<G1, G2, CircomCircuit<F1>, TrivialTestCircuit<F2>>;
+
+pub fn save_public_params_to_file(params: &PP, file_path: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let json = serde_json::to_string(params)?;
+    fs::write(file_path, json)?;
+    Ok(())
+}
+
+pub fn load_public_params_from_file(file_path: &str) -> Result<PP, Box<dyn std::error::Error>> {
+    let json = fs::read_to_string(file_path)?;
+    let params: PP = serde_json::from_str(&json)?;
+    Ok(params)
+}
+
+pub fn create_public_params_if_not_exist(r1cs: R1CS<F1>, file_path: &str) -> PP {
+    let pp = match load_public_params_from_file(file_path) {
+        Ok(params) => {
+            println!("loading public params from {:?}", file_path);
+            params
+        }
+        Err(_) => {
+            println!("creating public params...");
+            let params = create_public_params(r1cs);
+            println!("saving public params to {:?}", file_path);
+            let _ = save_public_params_to_file(&params, file_path);
+            params
+        }
+    };
+    pp
+}
+
 fn read_json_file_to_hashmap(file_path: &str) -> Result<HashMap<String, Value>, Box<dyn std::error::Error>> {
     // Open the file
     let mut file = File::open(file_path)?;
@@ -59,11 +95,11 @@ fn bench(iteration_count: usize) -> Result<(), Box<dyn std::error::Error>> {
     let root = current_dir().unwrap();
 
     let circuit_file = root.join("src/data/circom/ProcessMessages_v2_10-2-1-2_test.r1cs");
-    println!("loading r1cs file: {:?}", circuit_file);
+    println!("loading r1cs file: {:?}", circuit_file.clone());
     let r1cs = load_r1cs(&FileLocation::PathBuf(circuit_file));
-    println!("loading witness generation bin: {:?}", circuit_file);
     let witness_generator_file =
         root.join("src/data/circom/ProcessMessages_v2_10-2-1-2_test");
+    println!("loading witness generation bin: {:?}", witness_generator_file.clone());
 
     let mut start_public_input = Vec::new();
 
@@ -71,18 +107,21 @@ fn bench(iteration_count: usize) -> Result<(), Box<dyn std::error::Error>> {
 
     for i in 0..iteration_count {
         let input_path = format!("src/data/input/input_{}.json", i);
-        let private_input = read_json_file_to_hashmap(&input_path[..])?;
+        let mut private_input = read_json_file_to_hashmap(&input_path[..])?;
         if i == 0 {
-            let z0 = private_input.get("inputHash")
-               .and_then(|input_hash| input_hash.as_str())
+            let z0 = private_input.get("step_in")
+               .and_then(|input_hash| input_hash.as_array())
+               .and_then(|array| array.get(0))
+               .and_then(|z0| z0.as_str())
                .and_then(|z0| F1::from_str_vartime(&z0)).ok_or("Error: cannot parse z0")?; 
             start_public_input.push(z0);
         }
+        let _ = private_input.remove("step_in");
         private_inputs.push(private_input);
     }
 
-    println!("creating public params...");
-    let pp = create_public_params(r1cs.clone());
+    let file_path = "src/data/public_param.json";
+    let pp = create_public_params_if_not_exist(r1cs.clone(), file_path);
 
     println!(
         "Number of constraints per step (primary circuit): {}",

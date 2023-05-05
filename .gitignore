@@ -1,3 +1,5 @@
 /target
 Cargo.lock
 src/data/circom/
+.DS_Store
+.vscode/
