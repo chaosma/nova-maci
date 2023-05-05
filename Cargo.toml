@@ -1,0 +1,19 @@
+[package]
+name = "rust_playground"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+#nova-scotia = { git = "https://github.com/nalinbhardwaj/Nova-Scotia" }
+nova-scotia = { path = "/home/chao/Nova-Scotia" }
+nova-snark = { path = "/home/chao/Nova" }
+ff = { version = "0.12.0", features = ["derive"]}
+serde = "1.0"
+serde_json = "1.0.85"
+
+
+
+#[patch."https://github.com/nalinbhardwaj/Nova-Scotia"]
+#nova-scotia = { path = "/home/chao/Nova-Scotia" }
