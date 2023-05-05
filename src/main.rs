@@ -59,7 +59,9 @@ fn bench(iteration_count: usize) -> Result<(), Box<dyn std::error::Error>> {
     let root = current_dir().unwrap();
 
     let circuit_file = root.join("src/data/circom/ProcessMessages_v2_10-2-1-2_test.r1cs");
+    println!("loading r1cs file: {:?}", circuit_file);
     let r1cs = load_r1cs(&FileLocation::PathBuf(circuit_file));
+    println!("loading witness generation bin: {:?}", circuit_file);
     let witness_generator_file =
         root.join("src/data/circom/ProcessMessages_v2_10-2-1-2_test");
 
