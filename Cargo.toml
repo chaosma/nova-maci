@@ -6,9 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-nova-scotia = { path = "/Users/chao/opensource/nova/Nova-Scotia" }
-nova-snark = { path = "/Users/chao/opensource/nova/nova" }
-ff = { version = "0.12.0", features = ["derive"]}
+nova-scotia = { git = "https://github.com/chaosma/Nova-Scotia", branch = "feature/curve-grumpkin" }
+nova-snark = { git = "https://github.com/chaosma/Nova", branch = "feature/bn256-grumpkin" }
+ff = { version = "0.13.0", features = ["derive"]}
 serde = "1.0"
 serde_json = "1.0.85"
 
