@@ -19,32 +19,6 @@ use nova_snark::{
 };
 use serde_json::Value;
 
-/*
-#[derive(Serialize, Deserialize)]
-struct MACI_Inputs {
-    pollEndTimestamp: String,
-    packedVals: String,
-    msgRoot: String,
-    msgs: Vec<[String; 11]>,
-    msgSubrootPathElements: Vec<[String; 4]>,
-    coordPrivKey: String,
-    coordPubKey: [String; 2],
-    encPubKeys: Vec<[String; 2]>,
-    currentStateRoot: String,
-    currentBallotRoot: String,
-    currentSbCommitment: String,
-    currentSbSalt: String,
-    currentStateLeaves: Vec<[String; 4]>,
-    currentStateLeavesPathElements: Vec<Vec<[String; 4]>>,
-    currentBallots: Vec<[String; 2]>,
-    currentBallotsPathElements: Vec<Vec<[String; 4]>>,
-    currentVoteWeights: Vec<String>,
-    currentVoteWeightsPathElements: Vec<Vec<[String; 4]>>,
-    newSbSalt: String,
-    newSbCommitment: String,
-    inputHash: String
-} */
-
 type PP = PublicParams<G1, G2, CircomCircuit<F1>, TrivialTestCircuit<F2>>;
 
 pub fn save_public_params_to_file(params: &PP, file_path: &str) -> Result<(), Box<dyn std::error::Error>> {

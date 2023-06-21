@@ -3,3 +3,4 @@ Cargo.lock
 src/data/circom/
 .DS_Store
 .vscode/
+src/data/public_param.json
